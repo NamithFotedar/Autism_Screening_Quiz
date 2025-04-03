@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Autism Screening Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 5px;
+            transition: width 0.3s ease-in-out;
+        }
+        .progress-text {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        .question-card h3 {
+            margin-top: 0;
+        }
+        .options {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        .options label {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+        .navigation-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: linear-gradient(145deg, #4CAF50, #66BB6A);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            flex: 1;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s ease, box-shadow 0.2s ease;
+        }
+        .btn:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        #prevButton {
+            background: #666;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="progress-text">Question 1 of {{ questions|length }}</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <form action="/result" method="post" id="quizForm">
+            <input type="hidden" name="name" value="{{ name }}">
+            <input type="hidden" name="age" value="{{ age }}">
+
+            {% for i, question in enumerate(questions) %}
+            <div class="question-card fade-in" {% if i == 0 %}style="display:block"{% else %}style="display:none"{% endif %} id="question{{ i }}">
+                <h3>{{ i+1 }}. {{ question }}</h3>
+                <div class="options">
+                    <label><input type="radio" name="q{{ i }}" value="0" required> Never</label>
+                    <label><input type="radio" name="q{{ i }}" value="1"> Sometimes</label>
+                    <label><input type="radio" name="q{{ i }}" value="2"> Often</label>
+                    <label><input type="radio" name="q{{ i }}" value="3"> Always</label>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="navigation-buttons">
+                <button type="button" id="prevButton" class="btn" disabled>Previous</button>
+                <button type="button" id="nextButton" class="btn">Next</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const questionCards = document.querySelectorAll('.question-card');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.querySelector('.progress-text');
+        const form = document.querySelector('form');
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        const totalQuestions = {{ questions|length }};
+        let currentQuestion = 0;
+
+        function updateProgress() {
+            let answeredQuestions = 0;
+            questionCards.forEach((card, index) => {
+                const radios = form.querySelectorAll(`input[name="q${index}"]:checked`);
+                if (radios.length > 0) answeredQuestions++;
+            });
+
+            const progress = (answeredQuestions / totalQuestions) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${answeredQuestions} of ${totalQuestions} questions answered`;
+        }
+
+        function showQuestion(index) {
+            questionCards.forEach((card, i) => {
+                card.classList.remove('fade-in');
+                card.style.display = i === index ? 'block' : 'none';
+            });
+
+            prevButton.disabled = index === 0;
+
+            if (index === totalQuestions - 1) {
+                nextButton.textContent = 'Submit';
+                nextButton.type = 'submit';
+            } else {
+                nextButton.textContent = 'Next';
+                nextButton.type = 'button';
+            }
+
+            progressText.textContent = `Question ${index + 1} of ${totalQuestions}`;
+            questionCards[index].classList.add('fade-in');
+        }
+
+        function validateCurrentQuestion() {
+            const currentRadios = form.querySelectorAll(`input[name="q${currentQuestion}"]:checked`);
+            return currentRadios.length > 0;
+        }
+
+        prevButton.addEventListener('click', () => {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion(currentQuestion);
+            }
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (nextButton.type === 'submit') {
+                if (validateCurrentQuestion()) {
+                    form.submit();
+                } else {
+                    alert('Please answer the current question before submitting.');
+                }
+            } else if (validateCurrentQuestion()) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+            } else {
+                alert('Please answer the current question before proceeding.');
+            }
+        });
+
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', updateProgress);
+        });
+
+        updateProgress();
+        showQuestion(0);
+    </script>
+</body>
+</html>

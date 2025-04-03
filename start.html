@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Parent Information - Autism Screening Quiz</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            background-color: #f0f0f0; 
+        }
+        .container { 
+            max-width: 800px; 
+            width: 100%; 
+            padding: 40px; 
+            background-color: white; 
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); 
+            border-radius: 5px;
+            animation: fade-in 0.5s;
+        }
+        .form-group { 
+            margin-bottom: 20px; 
+            opacity: 0;
+            animation: slide-up 0.5s forwards;
+        }
+        .form-group:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-helper {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 4px;
+        }
+        input[type="text"], input[type="number"] { 
+            padding: 12px; 
+            width: 100%; 
+            max-width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+        .btn { 
+            padding: 12px 24px; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            animation: slide-up 0.5s forwards 0.4s;
+        }
+        .btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .info-note {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            opacity: 0;
+            animation: slide-up 0.5s forwards 0.1s;
+        }
+        .error {
+            color: #d32f2f;
+            font-size: 0.9em;
+            margin-top: 4px;
+            display: none;
+        }
+        input:invalid + .error {
+            display: block;
+        }
+
+        @keyframes fade-in {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slide-up {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Parent Information</h1>
+        <div class="info-note">
+            <strong>Note:</strong> This screening quiz is designed for parents to evaluate their children for potential autism spectrum traits. Please ensure you are a parent or legal guardian before proceeding.
+        </div>
+        <form action="/quiz" method="post" onsubmit="return validateForm()">
+            <div class="form-group">
+                <label>Your Name (Parent/Guardian):</label>
+                <input type="text" name="name" required>
+                <div class="form-helper">Please enter your full name as the parent/guardian</div>
+            </div>
+            <div class="form-group">
+                <label>Your Age:</label>
+                <input type="number" name="age" required min="30" max="100">
+                <div class="form-helper">Must be at least 30 years old to take this assessment</div>
+                <div class="error">Age must be at least 30 years</div>
+            </div>
+            <input type="submit" value="Continue to Quiz" class="btn">
+        </form>
+    </div>
+
+    <script>
+        function validateForm() {
+            const age = document.querySelector('input[name="age"]').value;
+            if (age < 30) {
+                alert('You must be at least 30 years old to take this assessment.');
+                return false;
+            }
+            return true;
+        }
+    </script>
+</body>
+</html>
